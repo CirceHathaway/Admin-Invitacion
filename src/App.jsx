@@ -112,7 +112,8 @@ export default function App() {
               <table className="admin-table">
                 <thead>
                   <tr>
-                    <th>Nombre / Familia</th>
+                    <th>Nombre Principal</th>
+                    <th>Acompañantes</th>
                     <th>Estado</th>
                     <th>Adultos</th>
                     <th>Niños</th>
@@ -121,10 +122,17 @@ export default function App() {
                   </tr>
                 </thead>
                 <tbody>
-                  {/* AQUÍ cambiamos "invitados.map" por "invitadosFiltrados.map" */}
                   {invitadosFiltrados.map(inv => (
                     <tr key={inv.id} className={inv.asistencia === 'no' ? 'row-absent' : 'row-confirmed'}>
                       <td data-label="Nombre">{inv.nombre}</td>
+                      
+                      {/* NUEVA COLUMNA: Acompañantes */}
+                      <td data-label="Acompañantes" className="comment-text">
+                        {inv.asistencia === 'si' && inv.nombresAcompanantes 
+                          ? inv.nombresAcompanantes 
+                          : <span className="empty-text">-</span>}
+                      </td>
+
                       <td data-label="Estado">
                         {inv.asistencia === 'si' 
                           ? <span className="badge badge-success">Confirmado</span> 
@@ -141,10 +149,9 @@ export default function App() {
                     </tr>
                   ))}
                   
-                  {/* Mensaje dinámico si el filtro no devuelve resultados */}
                   {invitadosFiltrados.length === 0 && (
                     <tr>
-                      <td colSpan="6" className="empty-state">No hay registros para este filtro.</td>
+                      <td colSpan="7" className="empty-state">No hay registros para este filtro.</td>
                     </tr>
                   )}
                 </tbody>
