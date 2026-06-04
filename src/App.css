@@ -327,27 +327,29 @@ body {
 
   /* Celda final: Comentarios */
   .admin-table td:last-child {
+    display: block; /* CAMBIO CLAVE: Rompe el flexbox para que el texto fluya naturalmente hacia abajo */
+    width: 100%;
+    box-sizing: border-box; /* Garantiza que el padding no desborde la pantalla */
     border-bottom: none;
-    flex-direction: column;
-    align-items: flex-start; /* Alinea los comentarios a la izquierda */
     text-align: left;
-    background: rgba(0, 0, 0, 0.15); /* Fondo oscuro para separar los comentarios */
+    background: rgba(0, 0, 0, 0.15);
     padding: 15px 20px;
+    
+    /* Forzamos el salto de línea del texto */
+    white-space: normal; 
+    word-wrap: break-word;
+    overflow-wrap: break-word;
   }
 
   .admin-table td:last-child::before {
-    margin-bottom: 8px; /* Espacio extra entre el título 'Comentarios' y el texto */
+    display: block; /* Pone el título 'COMENTARIOS' en su propio renglón */
+    margin-bottom: 8px;
   }
 
-  /* Ajuste para que los textos de comentarios largos no rompan la caja */
+  /* Ya no necesitamos el .comment-text viejo, puedes borrarlo o reemplazarlo por esto para evitar conflictos: */
   .comment-text {
-    max-width: 100%;
     width: 100%;
+    max-width: 100%;
     line-height: 1.5;
-    
-    /* --- NUEVAS REGLAS DE QUIEBRE DE TEXTO --- */
-    white-space: pre-wrap;      /* Respeta los "Enter" que haya dado el usuario */
-    overflow-wrap: break-word;  /* Corta la línea si la palabra es muy larga */
-    word-break: break-word;     /* Fuerza el salto hacia abajo sin salir de la caja */
   }
 }
