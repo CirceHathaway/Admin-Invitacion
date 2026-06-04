@@ -344,5 +344,10 @@ body {
     max-width: 100%;
     width: 100%;
     line-height: 1.5;
+    
+    /* --- NUEVAS REGLAS DE QUIEBRE DE TEXTO --- */
+    white-space: pre-wrap;      /* Respeta los "Enter" que haya dado el usuario */
+    overflow-wrap: break-word;  /* Corta la línea si la palabra es muy larga */
+    word-break: break-word;     /* Fuerza el salto hacia abajo sin salir de la caja */
   }
 }
