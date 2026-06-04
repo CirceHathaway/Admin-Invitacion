@@ -325,31 +325,29 @@ body {
     margin-right: 15px;
   }
 
-  /* Celda final: Comentarios */
-  .admin-table td:last-child {
-    display: block; /* CAMBIO CLAVE: Rompe el flexbox para que el texto fluya naturalmente hacia abajo */
+  /* --- CELDAS DE TEXTO LARGO (Acompañantes y Comentarios) --- */
+  .admin-table td.comment-text {
+    display: block; /* Rompe el formato de línea para que el texto baje */
     width: 100%;
-    box-sizing: border-box; /* Garantiza que el padding no desborde la pantalla */
-    border-bottom: none;
+    box-sizing: border-box; 
     text-align: left;
-    background: rgba(0, 0, 0, 0.15);
+    background: rgba(0, 0, 0, 0.15); /* Fondo oscuro para destacar los textos */
     padding: 15px 20px;
     
-    /* Forzamos el salto de línea del texto */
+    /* Obliga al texto a saltar de línea sin salirse de la pantalla */
     white-space: normal; 
     word-wrap: break-word;
     overflow-wrap: break-word;
   }
 
-  .admin-table td:last-child::before {
-    display: block; /* Pone el título 'COMENTARIOS' en su propio renglón */
+  /* Pone los títulos 'ACOMPAÑANTES' y 'COMENTARIOS' en su propio renglón arriba */
+  .admin-table td.comment-text::before {
+    display: block; 
     margin-bottom: 8px;
   }
 
-  /* Ya no necesitamos el .comment-text viejo, puedes borrarlo o reemplazarlo por esto para evitar conflictos: */
-  .comment-text {
-    width: 100%;
-    max-width: 100%;
-    line-height: 1.5;
+  /* Aseguramos que la última celda de la tarjeta no tenga la línea divisoria abajo */
+  .admin-table td:last-child {
+    border-bottom: none;
   }
 }
