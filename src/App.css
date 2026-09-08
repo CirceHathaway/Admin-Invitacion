@@ -569,6 +569,17 @@ body {
   transform: scale(1.1); /* Pequeño salto animado */
 }
 
+/* Botón de Excel */
+.export-btn {
+  background: rgba(16, 185, 129, 0.15) !important;
+  color: #34d399 !important;
+  border-left: 1px solid var(--border) !important;
+  margin-left: 10px;
+}
+.export-btn:hover {
+  background: #10b981 !important;
+  color: #fff !important;
+}
 
 /* =========================================================
    AJUSTES FINALES PARA CELULAR

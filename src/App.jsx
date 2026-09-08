@@ -10,8 +10,8 @@ export default function App() {
   
   // Estados de la interfaz
   const [filtro, setFiltro] = useState('todos'); 
-  const [vistaActual, setVistaActual] = useState('dashboard'); // 'dashboard' o 'recepcion'
-  const [searchTerm, setSearchTerm] = useState(''); // Estado para el buscador
+  const [vistaActual, setVistaActual] = useState('dashboard');
+  const [searchTerm, setSearchTerm] = useState(''); 
 
   useEffect(() => {
     const q = query(collection(db, "invitados"), orderBy("fechaConfirmacion", "desc"));
@@ -25,11 +25,9 @@ export default function App() {
     return () => unsubscribe();
   }, []);
 
-  // --- LÓGICA DE FIREBASE PARA EL CHECK-IN ---
   const toggleLlegada = async (idInvitado, nombrePersona, estadoActual) => {
     try {
       const invRef = doc(db, "invitados", idInvitado);
-      // Actualizamos solo el estado de esa persona específica en el documento
       await updateDoc(invRef, {
         [`checkInStatus.${nombrePersona}`]: !estadoActual
       });
@@ -39,7 +37,6 @@ export default function App() {
     }
   };
 
-  // --- CÁLCULOS ESTADÍSTICOS ---
   const confirmados = invitados.filter(i => i.asistencia === 'si');
   const ausentes = invitados.filter(i => i.asistencia === 'no');
   const totalAdultos = confirmados.reduce((sum, inv) => sum + Number(inv.adultos || 0), 0);
@@ -52,17 +49,51 @@ export default function App() {
     return true; 
   });
 
-  // --- LÓGICA DEL BUSCADOR (Lista de Recepción adaptada al nuevo Array de nombres) ---
   const listaRecepcion = confirmados.filter(inv => {
     const term = searchTerm.toLowerCase();
-    // Busca si ALGÚN nombre dentro de la lista coincide con lo que se escribe
     if (!inv.nombres) return false;
     return inv.nombres.some(nombre => nombre.toLowerCase().includes(term));
   });
 
+  // --- NUEVA FUNCIÓN: EXPORTAR A EXCEL (CSV) ---
+  const exportarAExcel = () => {
+    // El BOM (\uFEFF) fuerza a Excel a leer correctamente las tildes y la Ñ
+    let csvContent = "\uFEFF"; 
+    // Cabeceras de las columnas
+    csvContent += "Titular,Acompanantes,Estado,Adultos,Ninos,Menu Especial,Comentarios\n";
+
+    // CAMBIO: Ahora iteramos exclusivamente sobre el arreglo 'confirmados'
+    confirmados.forEach(inv => {
+      const nombrePrincipal = inv.nombres && inv.nombres.length > 0 ? inv.nombres[0] : "Sin nombre";
+      const acompanantes = inv.nombres && inv.nombres.length > 1 ? inv.nombres.slice(1).join(' - ') : "";
+      
+      // Como solo exportamos confirmados, podemos simplificar estos datos
+      const estado = 'Confirmado'; 
+      const adultos = inv.adultos || '0';
+      const ninos = inv.ninos || '0';
+      const dieta = inv.dieta || 'Ninguna';
+      
+      // Limpiamos los comentarios para que los saltos de línea no rompan el Excel
+      const comentarios = (inv.comentarios || '').replace(/"/g, '""').replace(/\n/g, ' ');
+
+      // Envolvemos todo en comillas dobles para separar bien las celdas
+      const fila = `"${nombrePrincipal}","${acompanantes}","${estado}","${adultos}","${ninos}","${dieta}","${comentarios}"`;
+      csvContent += fila + "\n";
+    });
+
+    // Crear el archivo virtual y forzar la descarga
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", `Lista_Confirmados_Melanie.csv`); // Nombre del archivo actualizado
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <div className="admin-layout">
-      {/* HEADER ACTUALIZADO */}
       <header className="admin-header">
         <div className="header-content">
           <i className="fas fa-crown crown-icon"></i>
@@ -86,12 +117,8 @@ export default function App() {
           </div>
         ) : (
           <>
-            {/* =========================================
-                VISTA 1: DASHBOARD (PANEL DE CONTROL)
-                ========================================= */}
             {vistaActual === 'dashboard' && (
               <div className="view-animate">
-                {/* Tarjetas de Resumen */}
                 <div className="stats-grid">
                   <div className="stat-card total">
                     <div className="stat-icon"><i className="fas fa-users"></i></div>
@@ -119,17 +146,20 @@ export default function App() {
                   </div>
                 </div>
 
-                {/* Controles de Filtro */}
                 <div className="table-controls">
                   <h3 className="table-title">Respuestas Generales</h3>
                   <div className="filter-group">
                     <button className={`filter-btn ${filtro === 'todos' ? 'active' : ''}`} onClick={() => setFiltro('todos')}>Todos</button>
                     <button className={`filter-btn ${filtro === 'confirmados' ? 'active' : ''}`} onClick={() => setFiltro('confirmados')}>Confirmados</button>
                     <button className={`filter-btn ${filtro === 'ausentes' ? 'active' : ''}`} onClick={() => setFiltro('ausentes')}>Ausentes</button>
+                    
+                    {/* --- NUEVO BOTÓN DE EXPORTAR --- */}
+                    <button className="filter-btn export-btn" onClick={exportarAExcel}>
+                      <i className="fas fa-file-excel"></i> Descargar Excel
+                    </button>
                   </div>
                 </div>
 
-                {/* Tabla General */}
                 <div className="table-container">
                   <table className="admin-table">
                     <thead>
@@ -145,7 +175,6 @@ export default function App() {
                     </thead>
                     <tbody>
                       {invitadosFiltrados.map(inv => {
-                        // El primer nombre de la lista es el principal, el resto son acompañantes
                         const nombrePrincipal = inv.nombres && inv.nombres.length > 0 ? inv.nombres[0] : "Sin nombre";
                         const acompañantes = inv.nombres && inv.nombres.length > 1 ? inv.nombres.slice(1).join(', ') : "";
 
@@ -175,15 +204,11 @@ export default function App() {
               </div>
             )}
 
-            {/* =========================================
-                VISTA 2: LISTA DE RECEPCIÓN (CHECK-IN)
-                ========================================= */}
             {vistaActual === 'recepcion' && (
               <div className="view-animate">
                 <div className="recepcion-header">
                   <h2><i className="fas fa-clipboard-list"></i> Lista de Entrada</h2>
                   
-                  {/* BUSCADOR */}
                   <div className="search-bar">
                     <i className="fas fa-search search-icon"></i>
                     <input 
@@ -208,7 +233,6 @@ export default function App() {
                         <h3 className="familia-title">Familia / Grupo de {tituloFamilia}</h3>
                         
                         <div className="personas-list">
-                          {/* Mapeamos directamente el nuevo Array de nombres */}
                           {inv.nombres && inv.nombres.map((persona, idx) => {
                             const personaLlego = statusCheck[persona] || false;
                             
@@ -219,7 +243,6 @@ export default function App() {
                                 onClick={() => toggleLlegada(inv.id, persona, personaLlego)}
                               >
                                 <span className="persona-nombre">
-                                  {/* Si es el primer elemento, le ponemos ícono de titular */}
                                   <i className={idx === 0 ? "fas fa-user-tie" : "fas fa-user"}></i> {persona} {idx === 0 && <small>(Titular)</small>}
                                 </span>
                                 <button className="check-btn">
@@ -239,7 +262,6 @@ export default function App() {
                 </div>
               </div>
             )}
-
           </>
         )}
       </main>
