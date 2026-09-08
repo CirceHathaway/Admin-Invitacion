@@ -52,12 +52,12 @@ export default function App() {
     return true; 
   });
 
-  // --- LÓGICA DEL BUSCADOR (Lista de Recepción) ---
+  // --- LÓGICA DEL BUSCADOR (Lista de Recepción adaptada al nuevo Array de nombres) ---
   const listaRecepcion = confirmados.filter(inv => {
     const term = searchTerm.toLowerCase();
-    const matchFamilia = inv.nombre.toLowerCase().includes(term);
-    const matchAcomp = (inv.nombresAcompanantes || '').toLowerCase().includes(term);
-    return matchFamilia || matchAcomp;
+    // Busca si ALGÚN nombre dentro de la lista coincide con lo que se escribe
+    if (!inv.nombres) return false;
+    return inv.nombres.some(nombre => nombre.toLowerCase().includes(term));
   });
 
   return (
@@ -144,25 +144,31 @@ export default function App() {
                       </tr>
                     </thead>
                     <tbody>
-                      {invitadosFiltrados.map(inv => (
-                        <tr key={inv.id} className={inv.asistencia === 'no' ? 'row-absent' : 'row-confirmed'}>
-                          <td data-label="Nombre">{inv.nombre}</td>
-                          <td data-label="Acompañantes" className="comment-text">
-                            {inv.asistencia === 'si' && inv.nombresAcompanantes ? inv.nombresAcompanantes : <span className="empty-text">-</span>}
-                          </td>
-                          <td data-label="Estado">
-                            {inv.asistencia === 'si' ? <span className="badge badge-success">Confirmado</span> : <span className="badge badge-error">Ausente</span>}
-                          </td>
-                          <td data-label="Adultos">{inv.asistencia === 'si' ? inv.adultos : '-'}</td>
-                          <td data-label="Niños">{inv.asistencia === 'si' ? inv.ninos : '-'}</td>
-                          <td data-label="Menú Especial" className={inv.dieta !== 'ninguna' ? 'highlight' : ''}>
-                            {inv.asistencia === 'si' ? (inv.dieta === 'ninguna' ? 'Ninguno' : inv.dieta.toUpperCase()) : '-'}
-                          </td>
-                          <td data-label="Comentarios" className="comment-text">
-                            {inv.comentarios || <span className="empty-text">Sin comentarios</span>}
-                          </td>
-                        </tr>
-                      ))}
+                      {invitadosFiltrados.map(inv => {
+                        // El primer nombre de la lista es el principal, el resto son acompañantes
+                        const nombrePrincipal = inv.nombres && inv.nombres.length > 0 ? inv.nombres[0] : "Sin nombre";
+                        const acompañantes = inv.nombres && inv.nombres.length > 1 ? inv.nombres.slice(1).join(', ') : "";
+
+                        return (
+                          <tr key={inv.id} className={inv.asistencia === 'no' ? 'row-absent' : 'row-confirmed'}>
+                            <td data-label="Nombre Principal">{nombrePrincipal}</td>
+                            <td data-label="Acompañantes" className="comment-text">
+                              {inv.asistencia === 'si' && acompañantes ? acompañantes : <span className="empty-text">-</span>}
+                            </td>
+                            <td data-label="Estado">
+                              {inv.asistencia === 'si' ? <span className="badge badge-success">Confirmado</span> : <span className="badge badge-error">Ausente</span>}
+                            </td>
+                            <td data-label="Adultos">{inv.asistencia === 'si' ? inv.adultos : '-'}</td>
+                            <td data-label="Niños">{inv.asistencia === 'si' ? inv.ninos : '-'}</td>
+                            <td data-label="Menú Especial" className={inv.dieta !== 'ninguna' ? 'highlight' : ''}>
+                              {inv.asistencia === 'si' ? (inv.dieta === 'ninguna' ? 'Ninguno' : inv.dieta.toUpperCase()) : '-'}
+                            </td>
+                            <td data-label="Comentarios" className="comment-text">
+                              {inv.comentarios || <span className="empty-text">Sin comentarios</span>}
+                            </td>
+                          </tr>
+                        );
+                      })}
                     </tbody>
                   </table>
                 </div>
@@ -182,7 +188,7 @@ export default function App() {
                     <i className="fas fa-search search-icon"></i>
                     <input 
                       type="text" 
-                      placeholder="Buscar por familia o acompañante..." 
+                      placeholder="Buscar por invitado o acompañante..." 
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
                     />
@@ -194,50 +200,33 @@ export default function App() {
 
                 <div className="recepcion-list">
                   {listaRecepcion.map(inv => {
-                    // Preparamos la lista de personas (El principal + los acompañantes)
                     const statusCheck = inv.checkInStatus || {};
-                    const principalLlego = statusCheck[inv.nombre] || false;
-                    
-                    // Separamos los nombres de los acompañantes por comas
-                    const acompañantesArray = inv.nombresAcompanantes 
-                      ? inv.nombresAcompanantes.split(',').map(n => n.trim()).filter(n => n !== "") 
-                      : [];
+                    const tituloFamilia = inv.nombres && inv.nombres.length > 0 ? inv.nombres[0] : "Invitado";
 
                     return (
                       <div className="familia-card" key={inv.id}>
-                        <h3 className="familia-title">{inv.nombre}</h3>
+                        <h3 className="familia-title">Familia / Grupo de {tituloFamilia}</h3>
                         
                         <div className="personas-list">
-                          {/* INVITADO PRINCIPAL */}
-                          <div 
-                            className={`persona-item ${principalLlego ? 'checked' : ''}`}
-                            onClick={() => toggleLlegada(inv.id, inv.nombre, principalLlego)}
-                          >
-                            <span className="persona-nombre">
-                              <i className="fas fa-user-tie"></i> {inv.nombre} <small>(Titular)</small>
-                            </span>
-                            <button className="check-btn">
-                              <i className="fas fa-check"></i>
-                            </button>
-                          </div>
-
-                          {/* ACOMPAÑANTES (Si los hay) */}
-                          {acompañantesArray.map((acomp, idx) => {
-                            const acompLlego = statusCheck[acomp] || false;
+                          {/* Mapeamos directamente el nuevo Array de nombres */}
+                          {inv.nombres && inv.nombres.map((persona, idx) => {
+                            const personaLlego = statusCheck[persona] || false;
+                            
                             return (
                               <div 
                                 key={idx}
-                                className={`persona-item ${acompLlego ? 'checked' : ''}`}
-                                onClick={() => toggleLlegada(inv.id, acomp, acompLlego)}
+                                className={`persona-item ${personaLlego ? 'checked' : ''}`}
+                                onClick={() => toggleLlegada(inv.id, persona, personaLlego)}
                               >
                                 <span className="persona-nombre">
-                                  <i className="fas fa-user"></i> {acomp}
+                                  {/* Si es el primer elemento, le ponemos ícono de titular */}
+                                  <i className={idx === 0 ? "fas fa-user-tie" : "fas fa-user"}></i> {persona} {idx === 0 && <small>(Titular)</small>}
                                 </span>
                                 <button className="check-btn">
                                   <i className="fas fa-check"></i>
                                 </button>
                               </div>
-                            )
+                            );
                           })}
                         </div>
                       </div>
