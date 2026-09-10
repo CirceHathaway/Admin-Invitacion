@@ -37,6 +37,18 @@ export default function App() {
     }
   };
 
+  // --- NUEVA FUNCIÓN PARA ACTUALIZAR LA MESA DE CADA INVITADO ---
+  const actualizarMesa = async (idInvitado, nombrePersona, nuevoNumeroMesa) => {
+    try {
+      const invRef = doc(db, "invitados", idInvitado);
+      await updateDoc(invRef, {
+        [`mesas.${nombrePersona}`]: nuevoNumeroMesa
+      });
+    } catch (error) {
+      console.error("Error al actualizar la mesa:", error);
+    }
+  };
+
   const confirmados = invitados.filter(i => i.asistencia === 'si');
   const ausentes = invitados.filter(i => i.asistencia === 'no');
   const totalAdultos = confirmados.reduce((sum, inv) => sum + Number(inv.adultos || 0), 0);
@@ -55,38 +67,31 @@ export default function App() {
     return inv.nombres.some(nombre => nombre.toLowerCase().includes(term));
   });
 
-  // --- NUEVA FUNCIÓN: EXPORTAR A EXCEL (CSV) ---
+  // --- FUNCIÓN: EXPORTAR A EXCEL (CSV) ---
   const exportarAExcel = () => {
-    // El BOM (\uFEFF) fuerza a Excel a leer correctamente las tildes y la Ñ
     let csvContent = "\uFEFF"; 
-    // Cabeceras de las columnas
     csvContent += "Titular,Acompanantes,Estado,Adultos,Ninos,Menu Especial,Comentarios\n";
 
-    // CAMBIO: Ahora iteramos exclusivamente sobre el arreglo 'confirmados'
     confirmados.forEach(inv => {
       const nombrePrincipal = inv.nombres && inv.nombres.length > 0 ? inv.nombres[0] : "Sin nombre";
       const acompanantes = inv.nombres && inv.nombres.length > 1 ? inv.nombres.slice(1).join(' - ') : "";
       
-      // Como solo exportamos confirmados, podemos simplificar estos datos
       const estado = 'Confirmado'; 
       const adultos = inv.adultos || '0';
       const ninos = inv.ninos || '0';
       const dieta = inv.dieta || 'Ninguna';
       
-      // Limpiamos los comentarios para que los saltos de línea no rompan el Excel
       const comentarios = (inv.comentarios || '').replace(/"/g, '""').replace(/\n/g, ' ');
 
-      // Envolvemos todo en comillas dobles para separar bien las celdas
       const fila = `"${nombrePrincipal}","${acompanantes}","${estado}","${adultos}","${ninos}","${dieta}","${comentarios}"`;
       csvContent += fila + "\n";
     });
 
-    // Crear el archivo virtual y forzar la descarga
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.setAttribute("href", url);
-    link.setAttribute("download", `Lista_Confirmados_Melanie.csv`); // Nombre del archivo actualizado
+    link.setAttribute("download", `Lista_Confirmados_Melanie.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -153,7 +158,6 @@ export default function App() {
                     <button className={`filter-btn ${filtro === 'confirmados' ? 'active' : ''}`} onClick={() => setFiltro('confirmados')}>Confirmados</button>
                     <button className={`filter-btn ${filtro === 'ausentes' ? 'active' : ''}`} onClick={() => setFiltro('ausentes')}>Ausentes</button>
                     
-                    {/* --- NUEVO BOTÓN DE EXPORTAR --- */}
                     <button className="filter-btn export-btn" onClick={exportarAExcel}>
                       <i className="fas fa-file-excel"></i> Descargar Excel
                     </button>
@@ -226,28 +230,54 @@ export default function App() {
                 <div className="recepcion-list">
                   {listaRecepcion.map(inv => {
                     const statusCheck = inv.checkInStatus || {};
+                    const mesasData = inv.mesas || {};
                     const tituloFamilia = inv.nombres && inv.nombres.length > 0 ? inv.nombres[0] : "Invitado";
 
                     return (
                       <div className="familia-card" key={inv.id}>
-                        <h3 className="familia-title">Familia / Grupo de {tituloFamilia}</h3>
+                        <h3 className="familia-title">Grupo de {tituloFamilia}</h3>
                         
                         <div className="personas-list">
                           {inv.nombres && inv.nombres.map((persona, idx) => {
                             const personaLlego = statusCheck[persona] || false;
+                            const numeroMesa = mesasData[persona] || '';
                             
                             return (
                               <div 
                                 key={idx}
                                 className={`persona-item ${personaLlego ? 'checked' : ''}`}
-                                onClick={() => toggleLlegada(inv.id, persona, personaLlego)}
                               >
-                                <span className="persona-nombre">
-                                  <i className={idx === 0 ? "fas fa-user-tie" : "fas fa-user"}></i> {persona} {idx === 0 && <small>(Titular)</small>}
-                                </span>
-                                <button className="check-btn">
-                                  <i className="fas fa-check"></i>
-                                </button>
+                                <div 
+                                  className="persona-info-click" 
+                                  onClick={() => toggleLlegada(inv.id, persona, personaLlego)}
+                                  style={{ display: 'flex', alignItems: 'center', gap: '10px', flex: 1, cursor: 'pointer' }}
+                                >
+                                  <span className="persona-nombre">
+                                    <i className={idx === 0 ? "fas fa-user-tie" : "fas fa-user"}></i> {persona} {idx === 0 && <small>(Titular)</small>}
+                                  </span>
+                                </div>
+
+                                <div className="persona-acciones">
+                                  {/* INPUT PARA EL NÚMERO DE MESA INDIVIDUAL */}
+                                  <div className="mesa-input-container">
+                                    <span className="mesa-label-mobile">Mesa:</span>
+                                    <input 
+                                      type="text" 
+                                      className="mesa-input"
+                                      placeholder="Mesa"
+                                      value={numeroMesa}
+                                      onChange={(e) => actualizarMesa(inv.id, persona, e.target.value)}
+                                      onClick={(e) => e.stopPropagation()} // Evita que se dispare el check-in al hacer click en el input
+                                    />
+                                  </div>
+
+                                  <button 
+                                    className="check-btn"
+                                    onClick={() => toggleLlegada(inv.id, persona, personaLlego)}
+                                  >
+                                    <i className="fas fa-check"></i>
+                                  </button>
+                                </div>
                               </div>
                             );
                           })}

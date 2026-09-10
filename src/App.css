@@ -1,3 +1,4 @@
+/* src/App.css */
 @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css');
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap');
 
@@ -154,7 +155,7 @@ body {
 }
 
 .filter-btn.active {
-  background: rgba(251, 191, 36, 0.15); /* Fondo dorado transparente */
+  background: rgba(251, 191, 36, 0.15);
   color: var(--gold);
   font-weight: 600;
 }
@@ -223,19 +224,58 @@ body {
 }
 .loading-state i { font-size: 2rem; color: var(--primary); margin-bottom: 15px;}
 
+/* =========================================================
+   ESTILOS DE RECEPCIÓN Y ACCIONES (MESA + CHECK)
+   ========================================================= */
+.persona-acciones {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.mesa-input-container {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.mesa-label-mobile {
+  display: none;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+
+.mesa-input {
+  width: 65px;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 6px 8px;
+  color: var(--gold);
+  font-family: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-align: center;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.mesa-input:focus {
+  border-color: var(--gold);
+  background: rgba(0, 0, 0, 0.5);
+}
 
 /* =========================================================
    MAGIA MOBILE: Transformación de Tabla a Tarjetas
    ========================================================= */
 @media (max-width: 768px) {
-  
-  /* --- 1. TARJETAS DE ESTADÍSTICAS CENTRADAS --- */
   .stats-grid { 
     grid-template-columns: 1fr; 
   }
   
   .stat-card {
-    flex-direction: column; /* Apila el ícono arriba y el texto abajo */
+    flex-direction: column;
     justify-content: center;
     text-align: center;
     padding: 25px 15px;
@@ -244,10 +284,9 @@ body {
   .stat-info {
     display: flex;
     flex-direction: column;
-    align-items: center; /* Centra los textos internos perfectamente */
+    align-items: center;
   }
 
-  /* Centramos los botones de filtros en celular */
   .table-controls {
     flex-direction: column;
     justify-content: center;
@@ -258,28 +297,25 @@ body {
   .filter-group {
     width: 100%;
     justify-content: center;
-    flex-wrap: wrap; /* Permite que los botones pasen a la fila de abajo si no hay espacio */
+    flex-wrap: wrap;
     box-sizing: border-box;
   }
 
-  /* El botón de Excel baja a su propio renglón y ocupa todo el ancho */
   .export-btn {
     width: 100%;
     margin-left: 0 !important;
     border-left: none !important;
-    border-top: 1px solid var(--border) !important; /* Línea separadora arriba */
+    border-top: 1px solid var(--border) !important;
     margin-top: 5px;
     padding: 12px !important;
   }
 
-  /* --- 2. LISTA DE INVITADOS (TARJETAS ORDENADAS) --- */
   .table-container { 
     background-color: transparent; 
     border: none; 
     box-shadow: none; 
   }
 
-  /* Ocultamos los títulos tradicionales de columnas */
   .admin-table th {
     display: none;
   }
@@ -289,7 +325,6 @@ body {
     width: 100%;
   }
 
-  /* La fila se convierte en la tarjeta base */
   .admin-table tr {
     display: flex;
     flex-direction: column;
@@ -297,36 +332,32 @@ body {
     border: 1px solid var(--border);
     border-radius: 12px;
     margin-bottom: 20px;
-    overflow: hidden; /* Clave para que el color del título no se salga de los bordes redondeados */
+    overflow: hidden;
   }
 
-  /* Cada celda es una línea dentro de la tarjeta */
   .admin-table td {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 12px 20px; /* Padding ajustado para que respire */
+    padding: 12px 20px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
     text-align: right;
   }
 
-  /* El nombre del invitado funciona como el "Header" de la tarjeta */
   .admin-table td:first-child {
-    background: rgba(251, 191, 36, 0.08); /* Fondo dorado muy sutil */
+    background: rgba(251, 191, 36, 0.08);
     font-weight: 700;
     font-size: 1.2rem;
     color: var(--gold);
     border-bottom: 2px solid var(--border);
-    justify-content: center; /* Centra el nombre de la familia */
+    justify-content: center;
     text-align: center;
   }
   
-  /* Ocultamos la etiqueta 'Nombre' porque es redundante */
   .admin-table td:first-child::before {
     display: none;
   }
 
-  /* Estilos para el texto inyectado "Adultos", "Niños", etc. */
   .admin-table td::before {
     content: attr(data-label);
     font-size: 0.85rem;
@@ -337,39 +368,55 @@ body {
     margin-right: 15px;
   }
 
-  /* --- CELDAS DE TEXTO LARGO (Acompañantes y Comentarios) --- */
   .admin-table td.comment-text {
-    display: block; /* Rompe el formato de línea para que el texto baje */
+    display: block;
     width: 100%;
-    max-width: none; /* <-- ESTO ANULA EL LÍMITE DE LA VERSIÓN PC */
+    max-width: none;
     box-sizing: border-box; 
     text-align: left;
-    background: rgba(0, 0, 0, 0.15); /* Fondo oscuro para destacar los textos */
+    background: rgba(0, 0, 0, 0.15);
     padding: 15px 20px;
-    
-    /* Obliga al texto a saltar de línea sin salirse de la pantalla */
     white-space: normal; 
     word-wrap: break-word;
     overflow-wrap: break-word;
   }
 
-  /* Pone los títulos 'ACOMPAÑANTES' y 'COMENTARIOS' en su propio renglón arriba */
   .admin-table td.comment-text::before {
     display: block; 
     margin-bottom: 8px;
   }
 
-  /* Aseguramos que la última celda de la tarjeta no tenga la línea divisoria abajo */
   .admin-table td:last-child {
     border-bottom: none;
+  }
+
+  /* --- ADAPTACIÓN MÓVIL PARA LA LISTA DE RECEPCIÓN Y MESAS --- */
+  .persona-item {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+    padding: 15px;
+  }
+
+  .persona-acciones {
+    justify-content: space-between;
+    width: 100%;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    padding-top: 10px;
+  }
+
+  .mesa-label-mobile {
+    display: inline-block;
+  }
+
+  .mesa-input {
+    width: 75px;
   }
 }
 
 /* =========================================================
    NUEVAS VISTAS: RECEPCIÓN Y HEADER
    ========================================================= */
-
-/* Animación de transición entre vistas */
 .view-animate {
   animation: fadeIn 0.4s ease forwards;
 }
@@ -379,21 +426,20 @@ body {
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* --- AJUSTES DEL HEADER --- */
 .header-content {
   display: flex;
   align-items: center;
-  justify-content: space-between; /* Distribuye: Corona(Izq) - Titulo(Centro) - Boton(Der) */
+  justify-content: space-between;
   width: 100%;
 }
 
 .header-title {
-  flex: 1; /* Permite que el título ocupe el espacio central */
+  flex: 1;
   text-align: center;
 }
 
 .crown-icon {
-  width: 40px; /* Ancho fijo para mantener la simetría con el botón derecho */
+  width: 40px;
   text-align: left;
 }
 
@@ -417,8 +463,6 @@ body {
   color: var(--bg-app);
 }
 
-
-/* --- VISTA DE RECEPCIÓN (CHECK-IN) --- */
 .recepcion-header {
   margin-bottom: 30px;
   text-align: center;
@@ -434,7 +478,6 @@ body {
   margin-right: 10px;
 }
 
-/* Buscador Moderno */
 .search-bar {
   display: flex;
   align-items: center;
@@ -480,8 +523,6 @@ body {
   font-size: 1.1rem;
 }
 
-
-/* Tarjetas de Familias para la Puerta */
 .recepcion-list {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -510,16 +551,14 @@ body {
   flex-direction: column;
 }
 
-/* Cada persona interactiva */
 .persona-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 15px 20px;
   border-bottom: 1px solid rgba(255,255,255,0.05);
-  cursor: pointer;
   transition: background-color 0.2s;
-  user-select: none; /* Evita que el texto se marque al hacer toques rápidos */
+  user-select: none;
 }
 
 .persona-item:last-child {
@@ -549,40 +588,37 @@ body {
   opacity: 0.8;
 }
 
-/* El botón de Tilde (Checkbox) */
 .check-btn {
   width: 35px;
   height: 35px;
   border-radius: 50%;
   border: 2px solid var(--border);
   background: transparent;
-  color: transparent; /* Oculta la tilde inicialmente */
+  color: transparent;
   display: flex;
   justify-content: center;
   align-items: center;
   font-size: 1.2rem;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  pointer-events: none; /* Para que el clic lo registre el contenedor padre (.persona-item) */
+  cursor: pointer;
 }
 
-/* ESTADO: CUANDO EL INVITADO LLEGA */
 .persona-item.checked {
-  background: rgba(16, 185, 129, 0.05); /* Fondo verdoso sutil */
+  background: rgba(16, 185, 129, 0.05);
 }
 
 .persona-item.checked .persona-nombre {
   color: var(--text-muted);
-  text-decoration: line-through; /* Tacha el nombre levemente */
+  text-decoration: line-through;
 }
 
 .persona-item.checked .check-btn {
   background: var(--success);
   border-color: var(--success);
-  color: white; /* Muestra la tilde */
-  transform: scale(1.1); /* Pequeño salto animado */
+  color: white;
+  transform: scale(1.1);
 }
 
-/* Botón de Excel */
 .export-btn {
   background: rgba(16, 185, 129, 0.15) !important;
   color: #34d399 !important;
@@ -594,16 +630,13 @@ body {
   color: #fff !important;
 }
 
-/* =========================================================
-   AJUSTES FINALES PARA CELULAR
-   ========================================================= */
 @media (max-width: 768px) {
   .header-title {
-    font-size: 1.1rem; /* Achica un poco la letra para que entre perfecto */
+    font-size: 1.1rem;
   }
   
   .header-content h1 span {
-    display: block; /* Manda "Mis 15 Melanie" al renglón de abajo para que quede simétrico */
+    display: block;
     font-size: 0.9rem;
   }
   
