@@ -258,6 +258,18 @@ body {
   .filter-group {
     width: 100%;
     justify-content: center;
+    flex-wrap: wrap; /* Permite que los botones pasen a la fila de abajo si no hay espacio */
+    box-sizing: border-box;
+  }
+
+  /* El botón de Excel baja a su propio renglón y ocupa todo el ancho */
+  .export-btn {
+    width: 100%;
+    margin-left: 0 !important;
+    border-left: none !important;
+    border-top: 1px solid var(--border) !important; /* Línea separadora arriba */
+    margin-top: 5px;
+    padding: 12px !important;
   }
 
   /* --- 2. LISTA DE INVITADOS (TARJETAS ORDENADAS) --- */
@@ -329,6 +341,7 @@ body {
   .admin-table td.comment-text {
     display: block; /* Rompe el formato de línea para que el texto baje */
     width: 100%;
+    max-width: none; /* <-- ESTO ANULA EL LÍMITE DE LA VERSIÓN PC */
     box-sizing: border-box; 
     text-align: left;
     background: rgba(0, 0, 0, 0.15); /* Fondo oscuro para destacar los textos */
